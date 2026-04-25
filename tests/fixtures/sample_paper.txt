@@ -1,0 +1,19 @@
+RAGFusion: Adaptive Retrieval-Augmented Generation with Cross-Encoder Re-ranking
+
+Alice Chen, Bob Martinez, Carol Liu
+Department of Computer Science, State University
+Published in Proceedings of ACL 2023
+
+Abstract
+
+Open-domain question answering systems struggle when relevant evidence spans multiple documents and requires multi-hop reasoning. We present RAGFusion, a retrieval-augmented generation framework that combines dense passage retrieval with a cross-encoder re-ranking step and a learned fusion gate to adaptively weight retrieved context. Unlike prior work that concatenates all retrieved passages, RAGFusion selectively integrates evidence using token-level attention over ranked candidates, reducing hallucination rates while maintaining high recall. Experiments on NaturalQuestions and HotpotQA show that RAGFusion achieves 87.4 EM on NaturalQuestions and 74.1 F1 on HotpotQA, outperforming the strongest RAG baseline by 4.2 and 6.1 points respectively. We release code and model checkpoints to facilitate future research.
+
+1. Introduction
+
+Retrieval-augmented generation (RAG) has emerged as a practical approach to grounding large language models in external knowledge. However, standard RAG pipelines retrieve a fixed number of passages and prepend them verbatim to the generation context, which introduces noise and exceeds context length limits when many documents are needed. Our key insight is that not all retrieved passages are equally relevant, and a lightweight re-ranking and fusion mechanism can substantially improve answer quality.
+
+We make the following contributions: (1) a cross-encoder re-ranker fine-tuned on MS MARCO that improves passage ordering; (2) a learned fusion gate that dynamically weights passage contributions; (3) a training procedure using distillation from a larger teacher model; (4) comprehensive ablations isolating the contribution of each component; (5) a human evaluation study confirming reduced hallucination.
+
+2. Limitations
+
+Our approach requires a two-stage retrieval pipeline which increases latency by approximately 40ms compared to standard RAG. The cross-encoder is trained on general web data and may underperform on highly specialized domains. We did not evaluate on non-English corpora.
