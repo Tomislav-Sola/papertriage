@@ -1,0 +1,27 @@
+{
+  "id": "test-paper-id",
+  "title": "RAGFusion: Adaptive Retrieval-Augmented Generation with Cross-Encoder Re-ranking",
+  "authors": ["Alice Chen", "Bob Martinez", "Carol Liu"],
+  "year": 2023,
+  "problem": "Open-domain question answering systems struggle when relevant evidence spans multiple documents and requires multi-hop reasoning. Standard RAG pipelines introduce noise by concatenating all retrieved passages without selective integration.",
+  "method": "retrieval-augmented generation with cross-encoder re-ranking",
+  "contributions": [
+    "cross-encoder re-ranker fine-tuned on MS MARCO that improves passage ordering",
+    "learned fusion gate that dynamically weights passage contributions",
+    "training procedure using distillation from a larger teacher model",
+    "comprehensive ablations isolating the contribution of each component",
+    "human evaluation study confirming reduced hallucination"
+  ],
+  "limitations": [
+    "two-stage retrieval pipeline increases latency by approximately 40ms compared to standard RAG",
+    "cross-encoder trained on general web data may underperform on highly specialized domains",
+    "not evaluated on non-English corpora"
+  ],
+  "datasets": ["NaturalQuestions", "HotpotQA", "MS MARCO"],
+  "key_results": [
+    "achieves 87.4 EM on NaturalQuestions",
+    "achieves 74.1 F1 on HotpotQA",
+    "outperforms strongest RAG baseline by 4.2 points on NaturalQuestions",
+    "outperforms strongest RAG baseline by 6.1 points on HotpotQA"
+  ]
+}
