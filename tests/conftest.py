@@ -1,4 +1,5 @@
 import json
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
@@ -21,6 +22,10 @@ class FakeClaudeClient:
         if fixture_file is not None:
             self._fixture = json.loads(fixture_file.read_text())
         self._calls: list[dict] = []
+
+    @contextmanager
+    def run(self, run_id: str):
+        yield
 
     def call_tool(
         self,
