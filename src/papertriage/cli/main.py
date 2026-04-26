@@ -23,10 +23,7 @@ def run(
     """Run the full papertriage pipeline."""
     from papertriage.orchestration.pipeline import run_pipeline
 
-    cfg = _settings
-    if out is not None:
-        from papertriage.core.config import Settings
-        cfg = Settings(output_dir=out)
+    cfg = _settings.model_copy(update={"output_dir": out}) if out else _settings
 
     claude = ClaudeClient(cfg)
 
