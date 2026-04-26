@@ -3,6 +3,17 @@
 A real pipeline run captured for demonstration. Skip the install and see what the
 tool actually produces.
 
+## Viewer screenshots
+
+The Streamlit viewer renders this run as four tabs:
+
+| Tab | Screenshot |
+|---|---|
+| Report | <img src="../docs/images/viewer-report.png" width="800"/> |
+| Critique | <img src="../docs/images/viewer-critique.png" width="800"/> |
+| Papers | <img src="../docs/images/viewer-papers.png" width="800"/> |
+| Cost | <img src="../docs/images/viewer-cost.png" width="800"/> |
+
 ## Setup
 
 - 2 arXiv PDFs (see [`arxiv_papers.txt`](arxiv_papers.txt) for IDs and URLs — download them yourself for reproducibility)
