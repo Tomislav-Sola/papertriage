@@ -1,0 +1,60 @@
+[
+  {
+    "id": "1c0ba1dd205189be1794e7268695bc8af5931efa",
+    "title": "",
+    "authors": [
+      "Shi-Qi Yan",
+      "Jia-Chen Gu",
+      "Yun Zhu",
+      "Zhen-Hua Ling"
+    ],
+    "year": 2024,
+    "problem": "Large language models exhibit hallucinations due to inaccurate parametric knowledge. While retrieval-augmented generation (RAG) can complement LLMs, its effectiveness heavily depends on the relevance and accuracy of retrieved documents, and current RAG approaches fail to handle scenarios where retrieval returns inaccurate or irrelevant results.",
+    "method": "Corrective retrieval-augmented generation with retrieval evaluation and decompose-then-recompose refinement",
+    "contributions": [
+      "Designs corrective strategies for RAG to improve robustness in scenarios where retrievers return inaccurate results",
+      "Proposes CRAG, a plug-and-play method with a lightweight retrieval evaluator that assesses document quality and triggers different knowledge retrieval actions (Correct, Incorrect, Ambiguous)",
+      "Integrates large-scale web searches as extension when static retrieval is insufficient",
+      "Implements decompose-then-recompose algorithm to selectively focus on key information and filter irrelevant content from retrieved documents",
+      "Demonstrates generalizability across both short-form and long-form generation tasks"
+    ],
+    "limitations": [],
+    "datasets": [
+      "PopQA",
+      "Biography",
+      "Pub Health",
+      "Arc-Challenge"
+    ],
+    "key_results": [
+      "CRAG significantly improves performance of standard RAG and state-of-the-art Self-RAG across four datasets"
+    ]
+  },
+  {
+    "id": "4e5aeffd52495c5a7a5bfc42b638af8624edaa1b",
+    "title": "",
+    "authors": [
+      "Fuda Ye",
+      "Shuangyin Li",
+      "Yongqi Zhang",
+      "Lei Chen"
+    ],
+    "year": 2024,
+    "problem": "There exists a semantic gap between retrievers and LLMs in retrieval augmented generation (RAG) due to their different training objectives and architectures. LLMs passively accept documents from retrievers and struggle to distinguish low-quality documents, impacting their generation accuracy.",
+    "method": "retrieval information fusion with transformer encoder",
+    "contributions": [
+      "Proposes R2AG, an enhanced RAG framework to incorporate retrieval information, compatible with frozen retrievers and LLMs for low-resource scenarios",
+      "Designs R2-Former, a lightweight trainable model to bridge semantic gap and capture essential retrieval information",
+      "Introduces retrieval-aware prompting strategy to inject retrieval information into input embeddings without changing document content or order",
+      "Demonstrates only 0.8% inference latency increase while improving model robustness across multiple datasets",
+      "Shows that retrieval information serves as anchor to aid LLMs in generation and document comprehension"
+    ],
+    "limitations": [],
+    "datasets": [
+      "Five datasets mentioned but names not specified in provided excerpt"
+    ],
+    "key_results": [
+      "Increases inference latency by only 0.8%",
+      "Demonstrates superior performance and robustness across five datasets"
+    ]
+  }
+]
