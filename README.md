@@ -150,3 +150,7 @@ production benchmark would need 50+ diverse papers to yield meaningful numbers.
   accuracy estimate.
 - No arXiv auto-fetching yet (planned for V1).
 - Single-user CLI tool — not designed as a concurrent system or SaaS.
+
+## License
+
+MIT — see [LICENSE](LICENSE) file.
