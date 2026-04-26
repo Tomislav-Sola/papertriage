@@ -73,6 +73,7 @@ def _write_artifacts(ctx: RunContext, stage_costs: dict[str, float]) -> None:
         (d / "report.md").write_text(ctx.report.markdown, encoding="utf-8")
     if ctx.critique:
         (d / "critique.md").write_text(_format_critique_md(ctx.critique), encoding="utf-8")
+        (d / "critique.json").write_text(ctx.critique.model_dump_json(indent=2), encoding="utf-8")
 
     total_usd = round(sum(stage_costs.values()), 6)
     (d / "cost.json").write_text(
@@ -112,29 +113,33 @@ def run_pipeline(
             stage_costs["ingest"] = round(_cost_snapshot() - cost_before, 6)
             _log.info("stage_ingest_done", count=len(ctx.raw_papers))
 
-            # Stage 2: extract (skip failed papers)
+            # Stage 2: extract — sentinels remain in ctx.papers for full transparency
+            # in papers.json, but are filtered before downstream stages
             cost_before = _cost_snapshot()
             for raw in ctx.raw_papers:
                 paper = extractor.extract(raw, claude)
                 ctx.papers.append(paper)
             stage_costs["extract"] = round(_cost_snapshot() - cost_before, 6)
+
+            valid_papers = [p for p in ctx.papers if p.title != "<extraction failed>"]
+            _log.info("stage_extract_filtered", failed=len(ctx.papers) - len(valid_papers))
             _log.info("stage_extract_done", count=len(ctx.papers))
 
             # Stage 3: cluster
             cost_before = _cost_snapshot()
-            ctx.clusters = clusterer.cluster(ctx.papers)
+            ctx.clusters = clusterer.cluster(valid_papers)
             stage_costs["cluster"] = round(_cost_snapshot() - cost_before, 6)
             _log.info("stage_cluster_done", count=len(ctx.clusters))
 
             # Stage 4: synthesize
             cost_before = _cost_snapshot()
-            ctx.report = synthesizer.synthesize(question, ctx.clusters, ctx.papers, claude)
+            ctx.report = synthesizer.synthesize(question, ctx.clusters, valid_papers, claude)
             stage_costs["synthesize"] = round(_cost_snapshot() - cost_before, 6)
             _log.info("stage_synthesize_done", citations=len(ctx.report.citations))
 
             # Stage 5: critique
             cost_before = _cost_snapshot()
-            ctx.critique = critic.critique(ctx.report, ctx.papers, claude)
+            ctx.critique = critic.critique(ctx.report, valid_papers, claude)
             stage_costs["critique"] = round(_cost_snapshot() - cost_before, 6)
             _log.info("stage_critique_done", findings=len(ctx.critique.findings))
 
