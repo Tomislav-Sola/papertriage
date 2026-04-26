@@ -1,0 +1,12 @@
+[
+  {
+    "paper_filename": "example.pdf",
+    "expected_fields": {
+      "title": "Some Paper Title",
+      "year": 2024,
+      "method": "method name",
+      "datasets": ["dataset_a"],
+      "contributions": ["contribution one"]
+    }
+  }
+]
