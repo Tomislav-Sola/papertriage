@@ -17,7 +17,7 @@ def _load_system_prompt() -> str:
 def _build_papers_block(papers: list[Paper]) -> str:
     lines = ["=== PAPER LIBRARY ===\n"]
     for p in papers:
-        lines.append(f"[{p.id}]")
+        lines.append(f"[{p.id[:8]}]")
         lines.append(f"Title: {p.title}")
         lines.append(f"Method: {p.method}")
         if p.contributions:
@@ -63,6 +63,10 @@ def synthesize(
     papers: list[Paper],
     claude: ClaudeClient,
 ) -> Report:
+    """Synthesise a literature review from clustered papers.
+
+    Citation.paper_id holds the 8-char short form of the SHA1; Paper.id is the full hash.
+    """
     system = _load_system_prompt()
     papers_block = _build_papers_block(papers)
     clusters_block = _build_clusters_block(clusters)
