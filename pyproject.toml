@@ -5,6 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "papertriage"
 version = "0.1.0"
+license = { text = "MIT" }
+authors = [
+    { name = "Tomislav Sola" }
+]
 requires-python = ">=3.11"
 dependencies = [
     "anthropic>=0.40.0",

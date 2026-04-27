@@ -1,0 +1,11 @@
+arXiv IDs used in the example run:
+
+- 2401.15884 — Corrective Retrieval Augmented Generation (CRAG)
+  https://arxiv.org/abs/2401.15884
+  https://arxiv.org/pdf/2401.15884
+
+- 2406.13249 — R²AG: Incorporating Retrieval Information into Retrieval Augmented Generation
+  https://arxiv.org/abs/2406.13249
+  https://arxiv.org/pdf/2406.13249
+
+PDFs are not redistributed in this repo — please download them from arxiv.org if you want to reproduce the run.

@@ -9,6 +9,10 @@ structured literature review: clustered papers, a synthesised narrative, and an 
 critique pass. It is a **triage tool** — its job is to surface relevant papers and connections
 quickly, not to replace careful reading.
 
+![Critique tab showing LLM-as-judge findings on a real run](docs/images/viewer-critique.png)
+
+*The critique pass surfaces unsupported claims and editorial overstatements with severity-coded findings and concrete suggested fixes. See [`examples/`](examples/) for the full run.*
+
 ## Why it exists
 
 This project was built to demonstrate AI orchestration patterns in a realistic, end-to-end
@@ -150,3 +154,7 @@ production benchmark would need 50+ diverse papers to yield meaningful numbers.
   accuracy estimate.
 - No arXiv auto-fetching yet (planned for V1).
 - Single-user CLI tool — not designed as a concurrent system or SaaS.
+
+## License
+
+MIT — see [LICENSE](LICENSE) file.
