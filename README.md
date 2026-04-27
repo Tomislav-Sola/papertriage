@@ -1,5 +1,10 @@
 # papertriage
 
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)
+![Status](https://img.shields.io/badge/status-MVP-orange)
+
 > Triage a folder of academic PDFs into a structured literature review using Claude.
 
 ## What this is
