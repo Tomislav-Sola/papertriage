@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)
+![Coverage](https://img.shields.io/badge/coverage-77%25-yellowgreen)
 ![Status](https://img.shields.io/badge/status-v0.2.0-blue)
 
 > Triage a folder of academic PDFs into a structured literature review using Claude.
