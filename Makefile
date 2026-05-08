@@ -10,7 +10,7 @@ eval:
 	python -m papertriage.eval
 
 run-viewer:
-	streamlit run viewer/app.py
+	streamlit run viewer/app.py --server.headless=true
 
 fmt:
 	ruff format src/ tests/
