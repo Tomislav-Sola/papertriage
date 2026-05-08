@@ -8,6 +8,7 @@ from papertriage.core.exceptions import BudgetExceededError
 from papertriage.extract.schema import Paper
 from papertriage.ingest.schema import RawPaper
 from papertriage.orchestration.pipeline import run_pipeline
+from papertriage.sources.local import LocalSource
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 
@@ -44,7 +45,6 @@ class _HappyFakeClaude:
     def call_tool(self, model, system, messages, tool, cached_blocks=None):
         if tool["name"] == "critique_review":
             return dict(_CRITIQUE_RESPONSE)
-        # extract_paper and any other tool → return paper dict
         return dict(_GOLDEN_PAPER)
 
     def call_text(self, model, system, messages, cached_blocks=None):
@@ -88,7 +88,7 @@ def _settings(tmp_path):
 
 def test_pipeline_writes_all_artifacts(tmp_path, monkeypatch, _fake_raw_paper, _settings):
     monkeypatch.setattr(
-        "papertriage.ingest.pdf_reader.read_pdf",
+        "papertriage.orchestration.pipeline.read_pdf",
         lambda path: _fake_raw_paper,
     )
 
@@ -97,7 +97,7 @@ def test_pipeline_writes_all_artifacts(tmp_path, monkeypatch, _fake_raw_paper, _
     (papers_dir / "paper1.pdf").write_bytes(b"fake")
 
     ctx = run_pipeline(
-        papers_dir=papers_dir,
+        sources=[LocalSource(papers_dir)],
         question="What retrieval methods work best?",
         max_papers=None,
         claude=_HappyFakeClaude(),
@@ -113,7 +113,7 @@ def test_pipeline_writes_all_artifacts(tmp_path, monkeypatch, _fake_raw_paper, _
 
 def test_pipeline_papers_json_is_valid(tmp_path, monkeypatch, _fake_raw_paper, _settings):
     monkeypatch.setattr(
-        "papertriage.ingest.pdf_reader.read_pdf",
+        "papertriage.orchestration.pipeline.read_pdf",
         lambda path: _fake_raw_paper,
     )
     papers_dir = tmp_path / "papers"
@@ -121,7 +121,7 @@ def test_pipeline_papers_json_is_valid(tmp_path, monkeypatch, _fake_raw_paper, _
     (papers_dir / "paper1.pdf").write_bytes(b"fake")
 
     ctx = run_pipeline(
-        papers_dir=papers_dir,
+        sources=[LocalSource(papers_dir)],
         question="test question",
         max_papers=None,
         claude=_HappyFakeClaude(),
@@ -138,7 +138,7 @@ def test_pipeline_budget_exceeded_writes_partial_artifacts_and_reraises(
     tmp_path, monkeypatch, _fake_raw_paper, _settings
 ):
     monkeypatch.setattr(
-        "papertriage.ingest.pdf_reader.read_pdf",
+        "papertriage.orchestration.pipeline.read_pdf",
         lambda path: _fake_raw_paper,
     )
     papers_dir = tmp_path / "papers"
@@ -147,15 +147,14 @@ def test_pipeline_budget_exceeded_writes_partial_artifacts_and_reraises(
 
     with pytest.raises(BudgetExceededError):
         run_pipeline(
-            papers_dir=papers_dir,
+            sources=[LocalSource(papers_dir)],
             question="test question",
             max_papers=None,
             claude=_BudgetFakeClaude(),
             settings=_settings,
         )
 
-    # Partial artifacts from stages 1–3 must exist
-    outputs = list((tmp_path / "outputs").iterdir())
+    outputs = [d for d in (tmp_path / "outputs").iterdir() if not d.name.startswith(".")]
     assert len(outputs) == 1, "expected exactly one run directory"
     run_dir = outputs[0]
     assert (run_dir / "papers.json").exists()

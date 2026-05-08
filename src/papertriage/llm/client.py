@@ -30,7 +30,13 @@ def pydantic_to_tool(name: str, description: str, model: type[BaseModel]) -> dic
         if "$ref" in node:
             ref_name = node["$ref"].split("/")[-1]
             return resolve(defs.get(ref_name, node))
-        return {k: resolve(v) for k, v in node.items() if k not in ("title", "$schema")}
+        # Strip schema annotations (e.g. "title": "Paper", "title": "Id") but
+        # only when the value is a string — a dict value means it IS a property
+        # definition whose key happens to be named "title", and must be kept.
+        return {
+            k: resolve(v) for k, v in node.items()
+            if not (k in ("title", "$schema") and isinstance(v, str))
+        }
 
     schema = resolve(raw_schema)
     schema.pop("title", None)

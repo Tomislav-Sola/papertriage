@@ -15,26 +15,49 @@ console = Console()
 
 @app.command()
 def run(
-    papers: Path = typer.Option(..., "--papers", help="Folder containing PDF files"),
+    papers: Path | None = typer.Option(None, "--papers", help="Folder containing PDF files"),
+    arxiv: list[str] | None = typer.Option(None, "--arxiv", help="arXiv ID to fetch (repeatable)"),
+    arxiv_list: Path | None = typer.Option(
+        None, "--arxiv-list", help="File with one arXiv ID per line"
+    ),
     question: str = typer.Option(..., "--question", "-q", help="Research question"),
     max_papers: int | None = typer.Option(None, "--max-papers", help="Maximum papers to process"),
     out: Path | None = typer.Option(None, "--out", help="Override output directory"),
+    no_cache: bool = typer.Option(False, "--no-cache", help="Bypass extraction cache"),
 ) -> None:
     """Run the full papertriage pipeline."""
     from papertriage.orchestration.pipeline import run_pipeline
+    from papertriage.sources import ArxivSource, LocalSource
 
     cfg = _settings.model_copy(update={"output_dir": out}) if out else _settings
+
+    sources = []
+    if papers is not None:
+        sources.append(LocalSource(papers))
+
+    all_arxiv_ids = list(arxiv or [])
+    if arxiv_list is not None:
+        all_arxiv_ids.extend(
+            line.strip() for line in arxiv_list.read_text().splitlines() if line.strip()
+        )
+    if all_arxiv_ids:
+        sources.append(ArxivSource(all_arxiv_ids, cfg))
+
+    if not sources:
+        console.print("[bold red]Error:[/bold red] Provide at least one of --papers or --arxiv.")
+        raise typer.Exit(code=1)
 
     claude = ClaudeClient(cfg)
 
     with Status("[bold green]Running pipeline...[/bold green]", console=console, spinner="dots"):
         try:
             ctx = run_pipeline(
-                papers_dir=papers,
+                sources=sources,
                 question=question,
                 max_papers=max_papers,
                 claude=claude,
                 settings=cfg,
+                no_cache=no_cache,
             )
         except Exception as exc:
             console.print(f"[bold red]Pipeline failed:[/bold red] {exc}")

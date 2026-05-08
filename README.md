@@ -2,8 +2,8 @@
 
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)
-![Status](https://img.shields.io/badge/status-MVP-orange)
+![Coverage](https://img.shields.io/badge/coverage-77%25-yellowgreen)
+![Status](https://img.shields.io/badge/status-v0.2.0-blue)
 
 > Triage a folder of academic PDFs into a structured literature review using Claude.
 
@@ -65,8 +65,16 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env   # add your ANTHROPIC_API_KEY
 
+# Option A: local PDFs
 mkdir -p papers        # drop a few PDFs into ./papers/
 papertriage run --papers ./papers --question "What are recent approaches to X?"
+
+# Option B: fetch from arXiv by ID (downloads and caches PDFs automatically)
+papertriage run --arxiv 2401.15884 --arxiv 2406.13249 --question "What are the key advances in RAG?"
+
+# Option C: mix both sources
+papertriage run --papers ./papers --arxiv 2401.15884 --question "..."
+
 make run-viewer
 ```
 
@@ -117,11 +125,15 @@ you can iterate on scoring logic and add test cases without spending API budget.
 **Disclaimer:** the current eval set is intended for ~5 papers — smoke-test scale only. A
 production benchmark would need 50+ diverse papers to yield meaningful numbers.
 
-## Roadmap
+## Features
 
-**V1 — Polish & coverage**
-- arXiv adapter: fetch PDFs by search query or paper ID
-- Extraction caching: skip re-extraction of unchanged PDFs across runs
+- **arXiv adapter** — pass `--arxiv <ID>` (repeatable) or `--arxiv-list <file>` to fetch PDFs
+  directly from arXiv. Downloads are cached under `outputs/.arxiv_cache/` so re-runs are instant.
+- **Extraction caching** — extracted `Paper` objects are stored under `outputs/.extract_cache/`
+  keyed by PDF content hash. Subsequent runs skip the LLM call for unchanged PDFs. Bypass with
+  `--no-cache` when you want to force re-extraction.
+
+## Roadmap
 
 **V2 — Better signals**
 - Embedding-based clustering with comparative evals against the TF-IDF baseline

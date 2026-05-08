@@ -15,7 +15,7 @@ outputs_dir = _settings.output_dir
 run_dirs = []
 if outputs_dir.exists():
     run_dirs = sorted(
-        [d for d in outputs_dir.iterdir() if d.is_dir()],
+        [d for d in outputs_dir.iterdir() if d.is_dir() and not d.name.startswith(".")],
         key=lambda d: d.stat().st_mtime,
         reverse=True,
     )
@@ -62,7 +62,16 @@ with tab_critique:
             for finding in data.get("findings", []):
                 sev = finding["severity"]
                 emoji = _SEVERITY_EMOJI.get(sev, "⚪")
-                preview = finding["claim"][:80]
+                claim = finding["claim"]
+                parts = claim.split(". ", 1)
+                first_sentence = parts[0]
+                has_more = len(parts) > 1
+                if len(first_sentence) > 100:
+                    preview = first_sentence[:97] + "..."
+                elif has_more:
+                    preview = first_sentence + "..."
+                else:
+                    preview = first_sentence
                 with st.expander(f"{emoji} **{sev.title()}** — {preview}"):
                     st.write(f"**Claim:** {finding['claim']}")
                     st.write(f"**Reason:** {finding['reason']}")

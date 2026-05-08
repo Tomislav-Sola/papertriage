@@ -10,17 +10,45 @@ import structlog.stdlib
 
 from papertriage.cluster import clusterer
 from papertriage.core.config import Settings
-from papertriage.core.exceptions import BudgetExceededError
+from papertriage.core.exceptions import BudgetExceededError, IngestError
 from papertriage.core.logging import get_logger, reset_run_id, set_run_id
 from papertriage.critique import critic
 from papertriage.critique.schema import Critique
 from papertriage.extract import extractor
-from papertriage.ingest.pdf_reader import read_folder
+from papertriage.extract.cache import ExtractionCache
+from papertriage.ingest.pdf_reader import read_pdf
+from papertriage.ingest.schema import RawPaper
 from papertriage.llm.client import ClaudeClient
 from papertriage.orchestration.context import RunContext
+from papertriage.sources.base import PdfSource
 from papertriage.synthesize import synthesizer
 
 _log = get_logger(__name__)
+
+
+def gather_papers(
+    sources: list[PdfSource],
+    max_papers: int | None,
+) -> list[RawPaper]:
+    seen: set[str] = set()
+    papers: list[RawPaper] = []
+
+    for source in sources:
+        for pdf_path in source.fetch():
+            try:
+                raw = read_pdf(pdf_path)
+            except IngestError as exc:
+                _log.warning("ingest_skip", path=str(pdf_path), reason=str(exc))
+                continue
+            if raw.id in seen:
+                _log.info("gather_dedup", path=str(pdf_path), paper_id=raw.id)
+                continue
+            seen.add(raw.id)
+            papers.append(raw)
+            if max_papers is not None and len(papers) >= max_papers:
+                return papers
+
+    return papers
 
 
 def _setup_file_logging(log_path: Path) -> logging.FileHandler:
@@ -83,11 +111,12 @@ def _write_artifacts(ctx: RunContext, stage_costs: dict[str, float]) -> None:
 
 
 def run_pipeline(
-    papers_dir: Path,
+    sources: list[PdfSource],
     question: str,
     max_papers: int | None,
     claude: ClaudeClient,
     settings: Settings,
+    no_cache: bool = False,
 ) -> RunContext:
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S") + "_" + uuid4().hex[:8]
     output_dir = settings.output_dir / run_id
@@ -99,17 +128,18 @@ def run_pipeline(
     run_id_token = set_run_id(run_id)
 
     stage_costs: dict[str, float] = {}
+    cache = None if no_cache else ExtractionCache(settings)
 
     def _cost_snapshot() -> float:
         return claude.get_run_cost(run_id)
 
     try:
         with claude.run(run_id):
-            _log.info("pipeline_start", run_id=run_id, papers_dir=str(papers_dir))
+            _log.info("pipeline_start", run_id=run_id)
 
             # Stage 1: ingest
             cost_before = _cost_snapshot()
-            ctx.raw_papers = read_folder(papers_dir, max_papers=max_papers)
+            ctx.raw_papers = gather_papers(sources, max_papers=max_papers)
             stage_costs["ingest"] = round(_cost_snapshot() - cost_before, 6)
             _log.info("stage_ingest_done", count=len(ctx.raw_papers))
 
@@ -117,13 +147,22 @@ def run_pipeline(
             # in papers.json, but are filtered before downstream stages
             cost_before = _cost_snapshot()
             for raw in ctx.raw_papers:
-                paper = extractor.extract(raw, claude)
+                paper = extractor.extract(raw, claude, cache=cache)
                 ctx.papers.append(paper)
             stage_costs["extract"] = round(_cost_snapshot() - cost_before, 6)
 
             valid_papers = [p for p in ctx.papers if p.title != "<extraction failed>"]
-            _log.info("stage_extract_filtered", failed=len(ctx.papers) - len(valid_papers))
-            _log.info("stage_extract_done", count=len(ctx.papers))
+            failed = len(ctx.papers) - len(valid_papers)
+            if cache is not None:
+                _log.info(
+                    "stage_extract_done",
+                    count=len(ctx.papers),
+                    failed=failed,
+                    cache_hits=cache.hits,
+                    cache_misses=cache.misses,
+                )
+            else:
+                _log.info("stage_extract_done", count=len(ctx.papers), failed=failed)
 
             # Stage 3: cluster
             cost_before = _cost_snapshot()
