@@ -1,4 +1,5 @@
 import json
+from enum import Enum
 from pathlib import Path
 
 import typer
@@ -13,6 +14,16 @@ app = typer.Typer(name="papertriage", help="Triage academic PDFs with Claude.")
 console = Console()
 
 
+class ClustererChoice(str, Enum):
+    tfidf = "tfidf"
+    embedding = "embedding"
+
+
+class CriticChoice(str, Enum):
+    multi = "multi"
+    single = "single"
+
+
 @app.command()
 def run(
     papers: Path | None = typer.Option(None, "--papers", help="Folder containing PDF files"),
@@ -24,6 +35,12 @@ def run(
     max_papers: int | None = typer.Option(None, "--max-papers", help="Maximum papers to process"),
     out: Path | None = typer.Option(None, "--out", help="Override output directory"),
     no_cache: bool = typer.Option(False, "--no-cache", help="Bypass extraction cache"),
+    clusterer: ClustererChoice = typer.Option(
+        ClustererChoice.tfidf, "--clusterer", help="Clustering algorithm to use"
+    ),
+    critic: CriticChoice = typer.Option(
+        CriticChoice.multi, "--critic", help="Critique mode: multi-agent (default) or single-pass"
+    ),
 ) -> None:
     """Run the full papertriage pipeline."""
     from papertriage.orchestration.pipeline import run_pipeline
@@ -58,6 +75,8 @@ def run(
                 claude=claude,
                 settings=cfg,
                 no_cache=no_cache,
+                clusterer_name=clusterer.value,
+                critic_mode=critic.value,
             )
         except Exception as exc:
             console.print(f"[bold red]Pipeline failed:[/bold red] {exc}")

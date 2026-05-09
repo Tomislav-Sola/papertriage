@@ -42,8 +42,10 @@ class _HappyFakeClaude:
     def run(self, run_id: str):
         yield
 
+    _CRITIQUE_TOOLS = {"critique_review", "factuality_findings", "coverage_findings", "novelty_findings"}
+
     def call_tool(self, model, system, messages, tool, cached_blocks=None):
-        if tool["name"] == "critique_review":
+        if tool["name"] in self._CRITIQUE_TOOLS:
             return dict(_CRITIQUE_RESPONSE)
         return dict(_GOLDEN_PAPER)
 
