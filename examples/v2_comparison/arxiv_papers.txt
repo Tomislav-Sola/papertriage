@@ -1,0 +1,21 @@
+arXiv IDs for the V2 comparison run.
+
+Six papers across two clear topic groups so clustering has something meaningful to do:
+
+RAG / retrieval-augmented generation (3 papers):
+  2401.15884  Corrective Retrieval Augmented Generation (CRAG)
+  2406.13249  R²AG: Incorporating Retrieval Information into RAG
+  2310.11511  Self-RAG: Learning to Retrieve, Generate, and Critique
+
+LLM alignment / RLHF (3 papers):
+  2203.02155  Training language models to follow instructions (InstructGPT)
+  2212.08073  Constitutional AI: Harmlessness from AI Feedback (Anthropic)
+  2307.09288  Llama 2: Open Foundation and Fine-Tuned Chat Models
+
+Research question used:
+  "What techniques beyond pre-training have been proposed to make large language
+   models more reliable, factual, and aligned with human intent?"
+
+This set is chosen so that TF-IDF clustering (lexical) and embedding clustering
+(semantic) both have a fair shot, but may split the groups differently —
+the comparison makes that difference visible.
