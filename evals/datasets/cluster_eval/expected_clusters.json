@@ -1,0 +1,86 @@
+{
+  "papers": [
+    {
+      "id": "rag1",
+      "title": "Retrieval-Augmented Generation for Open-Domain QA",
+      "problem": "Open-domain question answering requires access to large knowledge bases that cannot fit in model parameters",
+      "method": "Dense passage retrieval with a FAISS index combined with a generative reader model",
+      "contributions": ["retrieval augmented generation", "open domain QA", "dense passage retrieval"]
+    },
+    {
+      "id": "rag2",
+      "title": "Improving Factuality via Retrieved Context",
+      "problem": "Language models hallucinate facts not present in training data leading to unreliable outputs",
+      "method": "RAG pipeline with bi-encoder retrieval and cross-attention fusion of retrieved passages",
+      "contributions": ["hallucination reduction", "knowledge grounding", "factual consistency"]
+    },
+    {
+      "id": "rag3",
+      "title": "Hybrid Sparse-Dense Retrieval for Knowledge-Intensive NLP",
+      "problem": "Single-mode retrieval misses complementary signal from both lexical and semantic matching",
+      "method": "Hybrid BM25 and dense retrieval with late fusion for knowledge intensive NLP tasks",
+      "contributions": ["hybrid retrieval", "knowledge intensive NLP", "sparse dense fusion"]
+    },
+    {
+      "id": "rag4",
+      "title": "Adaptive Retrieval for Long-Context Synthesis",
+      "problem": "Fixed retrieval budgets waste context on irrelevant passages during multi-hop reasoning",
+      "method": "Iterative retrieval augmented generation with learned stopping criteria",
+      "contributions": ["iterative RAG", "multi-hop reasoning", "adaptive retrieval budget"]
+    },
+    {
+      "id": "rl1",
+      "title": "RLHF: Reinforcement Learning from Human Feedback",
+      "problem": "Pre-trained language models do not reliably follow human intent or avoid harmful outputs",
+      "method": "Proximal policy optimisation with a learned reward model trained on human preference data",
+      "contributions": ["RLHF alignment", "reward model training", "policy gradient fine-tuning"]
+    },
+    {
+      "id": "rl2",
+      "title": "Reward Shaping for Sparse Reward Environments",
+      "problem": "Reinforcement learning agents fail to learn in environments with infrequent reward signals",
+      "method": "Actor-critic with intrinsic motivation reward signal based on curiosity-driven exploration",
+      "contributions": ["sparse reward learning", "intrinsic motivation", "curiosity exploration"]
+    },
+    {
+      "id": "rl3",
+      "title": "Multi-Agent Cooperative Reinforcement Learning",
+      "problem": "Independent agents fail to coordinate optimally in cooperative multi-agent environments",
+      "method": "Centralised critic decentralised actor architecture for multi-agent policy learning",
+      "contributions": ["MARL", "cooperative policy learning", "centralised training"]
+    },
+    {
+      "id": "rl4",
+      "title": "Sample-Efficient Offline Reinforcement Learning",
+      "problem": "Online RL requires expensive environment interaction making it impractical for real-world deployment",
+      "method": "Conservative Q-learning on static offline datasets with pessimistic value estimation",
+      "contributions": ["offline RL", "conservative Q-learning", "sample efficiency"]
+    },
+    {
+      "id": "mm1",
+      "title": "Contrastive Vision-Language Pre-training at Scale",
+      "problem": "Image pixels and text tokens occupy incompatible representation spaces making vision-language alignment difficult",
+      "method": "Dual encoder with image CNN and text transformer trained via InfoNCE contrastive objective on image-caption pairs",
+      "contributions": ["vision language alignment", "image text contrastive pre-training", "zero-shot image classification", "pixel token representation"]
+    },
+    {
+      "id": "mm2",
+      "title": "Multimodal Instruction Tuning with Visual Scene Grounding",
+      "problem": "Uni-modal language models cannot process pixel-level visual inputs or spatially ground referring expressions",
+      "method": "Visual token projection layer connecting image encoder to instruction-tuned language decoder with cross-modal attention",
+      "contributions": ["visual instruction tuning", "pixel grounding", "image caption generation", "cross-modal attention fusion", "multimodal dialogue"]
+    }
+  ],
+  "expected": {
+    "rag1": "rag",
+    "rag2": "rag",
+    "rag3": "rag",
+    "rag4": "rag",
+    "rl1": "rl",
+    "rl2": "rl",
+    "rl3": "rl",
+    "rl4": "rl",
+    "mm1": "multimodal",
+    "mm2": "multimodal"
+  }
+}

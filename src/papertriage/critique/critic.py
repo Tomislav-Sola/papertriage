@@ -36,11 +36,10 @@ def _build_papers_block(papers: list[Paper]) -> str:
     return "\n".join(lines)
 
 
-def critique(report: Report, papers: list[Paper], claude: ClaudeClient) -> Critique:
+def _single_pass(report: Report, papers: list[Paper], claude: ClaudeClient) -> Critique:
     system = _load_system_prompt()
     papers_block = _build_papers_block(papers)
     tool = pydantic_to_tool(_TOOL_NAME, _TOOL_DESC, Critique)
-
     messages = [{"role": "user", "content": report.markdown}]
 
     result = claude.call_tool(
@@ -50,5 +49,25 @@ def critique(report: Report, papers: list[Paper], claude: ClaudeClient) -> Criti
         tool=tool,
         cached_blocks=[papers_block],
     )
+    critique = Critique.model_validate(result)
+    for f in critique.findings:
+        f.source_critic = None  # single-pass has no per-agent provenance
+    return critique
 
-    return Critique.model_validate(result)
+
+def critique(
+    report: Report,
+    papers: list[Paper],
+    claude: ClaudeClient,
+    mode: str = "multi",
+) -> Critique:
+    """Run critique stage.
+
+    mode="multi"  — three specialized critic agents (default; ~3x cost of single)
+    mode="single" — legacy single-pass critic for comparison or cost reduction
+    """
+    if mode == "single":
+        return _single_pass(report, papers, claude)
+
+    from papertriage.critique import aggregator
+    return aggregator.run(report, papers, claude)

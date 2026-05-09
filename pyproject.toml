@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "papertriage"
-version = "0.2.0"
+version = "0.3.0"
 license = { text = "MIT" }
 authors = [
     { name = "Tomislav Sola" }
@@ -30,6 +30,10 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
 ]
+embeddings = [
+    "sentence-transformers>=2.7",
+    "faiss-cpu>=1.7",
+]
 
 [project.scripts]
 papertriage = "papertriage.cli.main:app"
@@ -47,3 +51,6 @@ select = ["E", "F", "I", "UP"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+    "slow: marks tests as slow (deselect with '-m not slow')",
+]

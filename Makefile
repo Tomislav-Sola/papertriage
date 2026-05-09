@@ -1,7 +1,10 @@
-.PHONY: install test eval run-viewer fmt lint
+.PHONY: install install-embeddings test eval run-viewer fmt lint
 
 install:
 	pip install -e ".[dev]"
+
+install-embeddings:
+	pip install -e ".[embeddings]"
 
 test:
 	pytest -q --cov=papertriage --cov-report=term-missing

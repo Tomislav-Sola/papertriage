@@ -1,0 +1,10 @@
+{
+  "total_usd": 0.115638,
+  "per_stage": {
+    "ingest": 0.0,
+    "extract": 0.0,
+    "cluster": 0.0,
+    "synthesize": 0.026688,
+    "critique": 0.08895
+  }
+}

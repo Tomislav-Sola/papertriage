@@ -1,0 +1,114 @@
+{
+  "papers": [
+    {
+      "id": "rag-dense",
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "problem": "Language models struggle with knowledge-intensive tasks that require access to external facts",
+      "method": "Dual-encoder dense retrieval with FAISS index feeding a generative model",
+      "contributions": [
+        "RAG framework combining retrieval and generation",
+        "Demonstrated improvements on knowledge-intensive QA"
+      ],
+      "limitations": [
+        "Evaluated only on English benchmarks",
+        "Requires large pretraining corpus for dense encoder"
+      ],
+      "key_results": [
+        "Improved factual accuracy over closed-book baselines on TriviaQA and NaturalQuestions"
+      ]
+    },
+    {
+      "id": "rag-dpr",
+      "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+      "problem": "BM25 sparse retrieval misses semantically relevant passages not sharing surface terms with the query",
+      "method": "Bi-encoder trained with in-batch negatives to produce dense passage representations",
+      "contributions": [
+        "Dense Passage Retrieval (DPR) training procedure",
+        "State-of-the-art retrieval precision on NaturalQuestions dev set"
+      ],
+      "limitations": [
+        "Requires supervised training data with gold passages",
+        "Performance degrades on out-of-domain queries"
+      ],
+      "key_results": [
+        "Top-20 passage retrieval accuracy of 79.4% on NaturalQuestions"
+      ]
+    },
+    {
+      "id": "rag-hybrid",
+      "title": "Augmenting Dense Retrieval with Sparse Signals for Robust Open-Domain QA",
+      "problem": "Dense retrievers underperform in low-resource settings where training data for the domain is limited",
+      "method": "Late fusion of BM25 sparse scores and dense retriever scores with learned interpolation weights",
+      "contributions": [
+        "Hybrid sparse-dense retrieval with complementary signal",
+        "Robust performance in low-resource retrieval settings"
+      ],
+      "limitations": [
+        "Interpolation weights require tuning per domain",
+        "No multilingual evaluation"
+      ],
+      "key_results": [
+        "Outperforms dense-only retrieval on 4 of 5 benchmarks"
+      ]
+    },
+    {
+      "id": "rag-iter",
+      "title": "ITER-RETGEN: Iterative Retrieval Augmented by Generated Text",
+      "problem": "Single-pass retrieval cannot retrieve the full chain of evidence needed for multi-hop reasoning",
+      "method": "Iterative retrieval that uses the model's current generation to condition the next retrieval query",
+      "contributions": [
+        "Iterative RAG loop with generation-conditioned retrieval",
+        "Improved multi-hop reasoning without retrieval supervision"
+      ],
+      "limitations": [
+        "Multiple retrieval passes increase inference latency",
+        "Benefit diminishes on single-hop queries"
+      ],
+      "key_results": [
+        "State-of-the-art on 2WikiMultiHopQA and MuSiQue multi-hop benchmarks"
+      ]
+    }
+  ],
+  "planted_issues": [
+    {
+      "id": "issue_1",
+      "type": "fabricated_number",
+      "severity": "high",
+      "description": "Fabricated accuracy figure: '98.7% accuracy on the NaturalQuestions benchmark'",
+      "keywords": ["98.7", "NaturalQuestions", "accuracy"],
+      "expected_critic": "factuality"
+    },
+    {
+      "id": "issue_2",
+      "type": "unsupported_claim",
+      "severity": "high",
+      "description": "Unsupported generalization: 'all RAG approaches now consistently achieving over 90% accuracy'",
+      "keywords": ["90%", "all RAG", "consistently"],
+      "expected_critic": "factuality"
+    },
+    {
+      "id": "issue_3",
+      "type": "overstated_novelty",
+      "severity": "medium",
+      "description": "Unwarranted first-to-X claim: 'first application of retrieval to language model generation'",
+      "keywords": ["first application", "retrieval to language model"],
+      "expected_critic": "novelty"
+    },
+    {
+      "id": "issue_4",
+      "type": "unsupported_claim",
+      "severity": "high",
+      "description": "Fabricated deployment claim: 'deployed in production by over 50 Fortune 500 companies'",
+      "keywords": ["50", "Fortune 500", "production", "deployed"],
+      "expected_critic": "factuality"
+    },
+    {
+      "id": "issue_5",
+      "type": "missed_cluster",
+      "severity": "medium",
+      "description": "Multi-modal retrieval papers (mm-cluster) are in the library but never mentioned in the synthesis",
+      "keywords": ["multi-modal", "multimodal", "mm-cluster"],
+      "expected_critic": "coverage"
+    }
+  ]
+}

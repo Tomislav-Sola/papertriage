@@ -8,7 +8,8 @@ import structlog
 import structlog.processors
 import structlog.stdlib
 
-from papertriage.cluster import clusterer
+from papertriage.cluster.clusterer import TfidfClusterer
+from papertriage.cluster.protocol import Clusterer
 from papertriage.core.config import Settings
 from papertriage.core.exceptions import BudgetExceededError, IngestError
 from papertriage.core.logging import get_logger, reset_run_id, set_run_id
@@ -110,6 +111,13 @@ def _write_artifacts(ctx: RunContext, stage_costs: dict[str, float]) -> None:
     )
 
 
+def _build_clusterer(name: str) -> Clusterer:
+    if name == "embedding":
+        from papertriage.cluster.embedding import EmbeddingClusterer
+        return EmbeddingClusterer()
+    return TfidfClusterer()
+
+
 def run_pipeline(
     sources: list[PdfSource],
     question: str,
@@ -117,6 +125,8 @@ def run_pipeline(
     claude: ClaudeClient,
     settings: Settings,
     no_cache: bool = False,
+    clusterer_name: str = "tfidf",
+    critic_mode: str = "multi",
 ) -> RunContext:
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S") + "_" + uuid4().hex[:8]
     output_dir = settings.output_dir / run_id
@@ -129,6 +139,7 @@ def run_pipeline(
 
     stage_costs: dict[str, float] = {}
     cache = None if no_cache else ExtractionCache(settings)
+    active_clusterer = _build_clusterer(clusterer_name)
 
     def _cost_snapshot() -> float:
         return claude.get_run_cost(run_id)
@@ -166,9 +177,9 @@ def run_pipeline(
 
             # Stage 3: cluster
             cost_before = _cost_snapshot()
-            ctx.clusters = clusterer.cluster(valid_papers)
+            ctx.clusters = active_clusterer.cluster(valid_papers)
             stage_costs["cluster"] = round(_cost_snapshot() - cost_before, 6)
-            _log.info("stage_cluster_done", count=len(ctx.clusters))
+            _log.info("stage_cluster_done", count=len(ctx.clusters), clusterer=clusterer_name)
 
             # Stage 4: synthesize
             cost_before = _cost_snapshot()
@@ -178,9 +189,13 @@ def run_pipeline(
 
             # Stage 5: critique
             cost_before = _cost_snapshot()
-            ctx.critique = critic.critique(ctx.report, valid_papers, claude)
+            ctx.critique = critic.critique(ctx.report, valid_papers, claude, mode=critic_mode)
             stage_costs["critique"] = round(_cost_snapshot() - cost_before, 6)
-            _log.info("stage_critique_done", findings=len(ctx.critique.findings))
+            _log.info(
+                "stage_critique_done",
+                findings=len(ctx.critique.findings),
+                critic_mode=critic_mode,
+            )
 
             _log.info("pipeline_done", run_id=run_id, output_dir=str(output_dir))
 

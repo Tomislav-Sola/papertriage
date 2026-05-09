@@ -14,6 +14,12 @@ class Finding(BaseModel):
     severity: Severity
     reason: str
     suggested_fix: str
+    source_critic: str | None = None
+
+
+class FindingList(BaseModel):
+    """Tool-use wrapper for extracting a list of findings from a single critic agent."""
+    findings: list[Finding]
 
 
 class Critique(BaseModel):

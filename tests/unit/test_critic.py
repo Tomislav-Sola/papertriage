@@ -55,9 +55,10 @@ def test_critique_returns_critique_with_expected_structure():
 def test_critique_handles_empty_findings():
     paper = Paper(id="abc123", title="Paper A", method="method A")
     report = Report(markdown="Well-supported synthesis.", citations=[])
+    # Use single-pass mode to exercise the legacy path with its exact overall_assessment
     canned = {"findings": [], "overall_assessment": "No issues found."}
 
-    result = critique(report, [paper], _FakeToolClient(canned))
+    result = critique(report, [paper], _FakeToolClient(canned), mode="single")
 
     assert isinstance(result, Critique)
     assert result.findings == []

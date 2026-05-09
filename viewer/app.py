@@ -31,7 +31,7 @@ else:
         'No run selected. Start one with: `papertriage run --papers <dir> --question "..."`'
     )
 
-tab_report, tab_critique, tab_papers, tab_cost = st.tabs(["Report", "Critique", "Papers", "Cost"])
+tab_report, tab_clusters, tab_critique, tab_papers, tab_cost = st.tabs(["Report", "Clusters", "Critique", "Papers", "Cost"])
 
 _NO_RUN_MSG = "Select a run from the sidebar to view this tab."
 
@@ -46,6 +46,33 @@ with tab_report:
         else:
             st.info("No report available for this run.")
 
+# --- Clusters ---
+with tab_clusters:
+    if run_dir is None:
+        st.info(_NO_RUN_MSG)
+    else:
+        clusters_path = run_dir / "clusters.json"
+        if not clusters_path.exists():
+            st.info("No clusters data for this run.")
+        else:
+            clusters = json.loads(clusters_path.read_text(encoding="utf-8"))
+            papers_path_c = run_dir / "papers.json"
+            id_to_title: dict[str, str] = {}
+            if papers_path_c.exists():
+                for p in json.loads(papers_path_c.read_text(encoding="utf-8")):
+                    id_to_title[p["id"]] = p.get("title") or p["id"][:8]
+
+            for cluster in clusters:
+                label = cluster.get("label", f"Cluster {cluster['id']}")
+                keywords = cluster.get("keywords", [])
+                paper_ids = cluster.get("paper_ids", [])
+                with st.expander(f"**{label}** — {len(paper_ids)} paper(s)", expanded=True):
+                    if keywords:
+                        st.caption("Keywords: " + " · ".join(keywords))
+                    for pid in paper_ids:
+                        title = id_to_title.get(pid, pid[:8])
+                        st.markdown(f"- {title}")
+
 # --- Critique ---
 with tab_critique:
     if run_dir is None:
@@ -59,6 +86,11 @@ with tab_critique:
             st.markdown(f"**Overall Assessment:** {data['overall_assessment']}")
             st.divider()
             _SEVERITY_EMOJI = {"high": "🔴", "medium": "🟡", "low": "🟢"}
+            _CRITIC_BADGE = {
+                "factuality": ":orange[factuality]",
+                "coverage": ":blue[coverage]",
+                "novelty": ":violet[novelty]",
+            }
             for finding in data.get("findings", []):
                 sev = finding["severity"]
                 emoji = _SEVERITY_EMOJI.get(sev, "⚪")
@@ -72,7 +104,9 @@ with tab_critique:
                     preview = first_sentence + "..."
                 else:
                     preview = first_sentence
-                with st.expander(f"{emoji} **{sev.title()}** — {preview}"):
+                source = finding.get("source_critic")
+                badge = f" · {_CRITIC_BADGE.get(source, source)}" if source else ""
+                with st.expander(f"{emoji} **{sev.title()}**{badge} — {preview}"):
                     st.write(f"**Claim:** {finding['claim']}")
                     st.write(f"**Reason:** {finding['reason']}")
                     st.write(f"**Suggested fix:** {finding['suggested_fix']}")

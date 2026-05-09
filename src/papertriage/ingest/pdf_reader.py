@@ -93,6 +93,15 @@ def read_pdf(path: Path) -> RawPaper:
 
     metadata = _extract_metadata(reader)
 
+    # Merge sidecar metadata written by ArxivSource (authoritative title etc.)
+    sidecar = path.with_suffix(".meta.json")
+    if sidecar.exists():
+        try:
+            import json as _json
+            metadata.update(_json.loads(sidecar.read_text(encoding="utf-8")))
+        except Exception:
+            pass
+
     # Preserve the raw first page (line breaks intact) so the extractor can
     # show Claude the structural layout where the title appears on its own line.
     if pages and pages[0].strip():

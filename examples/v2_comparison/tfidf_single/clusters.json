@@ -1,0 +1,47 @@
+[
+  {
+    "id": 0,
+    "label": "Retrieval",
+    "paper_ids": [
+      "0e2f3be9769d93012f1fe7b0d3f0387d79760d0d",
+      "7f782037d299571bf4db2bff480e274a3a60345a",
+      "53dea3c23b57c451e7b3a04e739cc3055a18eefb"
+    ],
+    "keywords": [
+      "retrieval",
+      "generation",
+      "rag",
+      "documents",
+      "information"
+    ]
+  },
+  {
+    "id": 1,
+    "label": "Fine Tuning",
+    "paper_ids": [
+      "3f8c0e98360ec16c4c2ed6e868532ee87399960f",
+      "c8ef7ce303a3ebd30326351c11a7670614744fee"
+    ],
+    "keywords": [
+      "fine",
+      "fine tuning",
+      "tuning",
+      "human",
+      "models"
+    ]
+  },
+  {
+    "id": 2,
+    "label": "Ai Assistants",
+    "paper_ids": [
+      "c831e729a3c2ad95b8f413797c0e4e532c43fc4e"
+    ],
+    "keywords": [
+      "ai",
+      "training",
+      "ai assistants",
+      "assistants",
+      "harmless"
+    ]
+  }
+]
