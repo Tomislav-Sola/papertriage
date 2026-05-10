@@ -13,6 +13,7 @@ class RunContext(BaseModel):
     run_id: str
     output_dir: Path
     question: str
+    critic_mode: str = "multi"
     raw_papers: list[RawPaper] = Field(default_factory=list)
     papers: list[Paper] = Field(default_factory=list)
     clusters: list[Cluster] = Field(default_factory=list)

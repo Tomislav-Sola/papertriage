@@ -41,6 +41,12 @@ def run(
     critic: CriticChoice = typer.Option(
         CriticChoice.multi, "--critic", help="Critique mode: multi-agent (default) or single-pass"
     ),
+    enable_graph: bool = typer.Option(
+        False, "--enable-graph", help="Build knowledge graph (requires embeddings extra)"
+    ),
+    graph_threshold: float = typer.Option(
+        0.6, "--graph-threshold", help="Cosine similarity threshold for graph edges (0–1)"
+    ),
 ) -> None:
     """Run the full papertriage pipeline."""
     from papertriage.orchestration.pipeline import run_pipeline
@@ -77,6 +83,8 @@ def run(
                 no_cache=no_cache,
                 clusterer_name=clusterer.value,
                 critic_mode=critic.value,
+                enable_graph=enable_graph,
+                graph_threshold=graph_threshold,
             )
         except Exception as exc:
             console.print(f"[bold red]Pipeline failed:[/bold red] {exc}")
@@ -113,6 +121,45 @@ def cost(run_id: str = typer.Argument(..., help="Run ID to inspect")) -> None:
     console.print(f"[bold]Total:[/bold] ${data['total_usd']:.6f}")
     for stage, stage_cost in data.get("per_stage", {}).items():
         console.print(f"  {stage:<12} ${stage_cost:.6f}")
+
+
+@app.command(name="regenerate")
+def regenerate_run(
+    run_id: str = typer.Argument(..., help="Run ID to regenerate from"),
+    critic: CriticChoice = typer.Option(
+        CriticChoice.multi, "--critic", help="Critique mode for regeneration"
+    ),
+) -> None:
+    """Rerun synthesize + critique using review.json overrides for a prior run.
+
+    Excluded papers and cluster label edits from the viewer (or review.json)
+    are applied. Output is written to outputs/<run_id>/regenerated_<timestamp>/
+    and the original run is never modified.
+    """
+    from papertriage.orchestration.regenerate import regenerate
+
+    claude = ClaudeClient(_settings)
+
+    with Status("[bold green]Regenerating...[/bold green]", console=console, spinner="dots"):
+        try:
+            ctx = regenerate(
+                run_id=run_id,
+                claude=claude,
+                settings=_settings,
+                critic_mode=critic.value,
+            )
+        except FileNotFoundError as exc:
+            console.print(f"[bold red]Error:[/bold red] {exc}")
+            raise typer.Exit(code=1)
+        except Exception as exc:
+            console.print(f"[bold red]Regeneration failed:[/bold red] {exc}")
+            raise typer.Exit(code=1)
+
+    console.print(f"[bold]Output:[/bold]   {ctx.output_dir}")
+    if ctx.report:
+        console.print(f"[bold]Citations:[/bold] {len(ctx.report.citations)}")
+    if ctx.critique:
+        console.print(f"[bold]Findings:[/bold] {len(ctx.critique.findings)}")
 
 
 if __name__ == "__main__":

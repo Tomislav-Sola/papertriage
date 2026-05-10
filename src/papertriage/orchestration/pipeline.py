@@ -88,6 +88,13 @@ def _write_artifacts(ctx: RunContext, stage_costs: dict[str, float]) -> None:
     d = ctx.output_dir
     d.mkdir(parents=True, exist_ok=True)
 
+    (d / "meta.json").write_text(
+        json.dumps(
+            {"run_id": ctx.run_id, "question": ctx.question, "critic_mode": ctx.critic_mode},
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
     if ctx.papers:
         (d / "papers.json").write_text(
             json.dumps([p.model_dump() for p in ctx.papers], indent=2),
@@ -118,6 +125,22 @@ def _build_clusterer(name: str) -> Clusterer:
     return TfidfClusterer()
 
 
+def _build_knowledge_graph(
+    papers: list,
+    embeddings: "numpy.ndarray",  # type: ignore[name-defined]  # noqa: F821
+    clusters: list,
+    output_dir: Path,
+    threshold: float = 0.6,
+) -> None:
+    try:
+        from papertriage.graph.builder import build_graph, render_pyvis
+        G = build_graph(papers, embeddings, clusters, threshold=threshold)
+        render_pyvis(G, output_dir / "knowledge_graph.html")
+        _log.info("graph_built", nodes=G.number_of_nodes(), edges=G.number_of_edges())
+    except ImportError as exc:
+        _log.warning("graph_skipped", reason=str(exc))
+
+
 def run_pipeline(
     sources: list[PdfSource],
     question: str,
@@ -127,12 +150,14 @@ def run_pipeline(
     no_cache: bool = False,
     clusterer_name: str = "tfidf",
     critic_mode: str = "multi",
+    enable_graph: bool = False,
+    graph_threshold: float = 0.6,
 ) -> RunContext:
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S") + "_" + uuid4().hex[:8]
     output_dir = settings.output_dir / run_id
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    ctx = RunContext(run_id=run_id, output_dir=output_dir, question=question)
+    ctx = RunContext(run_id=run_id, output_dir=output_dir, question=question, critic_mode=critic_mode)
 
     log_handler = _setup_file_logging(output_dir / "run.log")
     run_id_token = set_run_id(run_id)
@@ -180,6 +205,17 @@ def run_pipeline(
             ctx.clusters = active_clusterer.cluster(valid_papers)
             stage_costs["cluster"] = round(_cost_snapshot() - cost_before, 6)
             _log.info("stage_cluster_done", count=len(ctx.clusters), clusterer=clusterer_name)
+
+            # Optional: save embeddings + build knowledge graph
+            from papertriage.cluster.embedding import EmbeddingClusterer
+            if isinstance(active_clusterer, EmbeddingClusterer) and active_clusterer.last_embeddings is not None:
+                import numpy as np
+                np.save(str(output_dir / "embeddings.npy"), active_clusterer.last_embeddings)
+                if enable_graph or clusterer_name == "embedding":
+                    _build_knowledge_graph(
+                        valid_papers, active_clusterer.last_embeddings, ctx.clusters,
+                        output_dir, graph_threshold,
+                    )
 
             # Stage 4: synthesize
             cost_before = _cost_snapshot()
