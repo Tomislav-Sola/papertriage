@@ -16,6 +16,7 @@ class EmbeddingClusterer:
 
     def __init__(self, model_name: str = _MODEL_NAME) -> None:
         self._model_name = model_name
+        self.last_embeddings: np.ndarray | None = None
 
     def _load_model(self):
         try:
@@ -28,12 +29,6 @@ class EmbeddingClusterer:
         return SentenceTransformer(self._model_name)
 
     def cluster(self, papers: list[Paper], n_clusters: int | None = None) -> list[Cluster]:
-        if len(papers) < 4:
-            return [Cluster(id=0, label="all", paper_ids=[p.id for p in papers], keywords=[])]
-
-        n = n_clusters if n_clusters is not None else min(4, len(papers) // 2)
-        n = max(1, min(n, len(papers)))
-
         corpus = [
             p.problem + " " + p.method + " " + " ".join(p.contributions)
             for p in papers
@@ -43,7 +38,6 @@ class EmbeddingClusterer:
         embeddings: np.ndarray = model.encode(corpus, normalize_embeddings=True)
         embeddings_f32 = embeddings.astype(np.float32)
 
-        # FAISS index stores embeddings; V3 will add persistence via IndexIVFFlat
         try:
             import faiss
         except ImportError:
@@ -57,6 +51,13 @@ class EmbeddingClusterer:
         index.add(embeddings_f32)
         # Vectors are stored flat in index.xb; retrieve for clustering
         vectors = np.array([index.reconstruct(i) for i in range(index.ntotal)])
+        self.last_embeddings = vectors  # Always set — used by graph builder
+
+        if len(papers) < 4:
+            return [Cluster(id=0, label="all", paper_ids=[p.id for p in papers], keywords=[])]
+
+        n = n_clusters if n_clusters is not None else min(4, len(papers) // 2)
+        n = max(1, min(n, len(papers)))
 
         # Ward linkage on L2-normalized vectors approximates cosine distance
         agg = AgglomerativeClustering(n_clusters=n, metric="euclidean", linkage="ward")
