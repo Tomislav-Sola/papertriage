@@ -30,3 +30,6 @@ test_papers/
 .DS_Store
 .idea/
 .vscode/
+
+# pyvis JS bundles written alongside the script that calls save_graph()
+lib/

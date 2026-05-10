@@ -2,8 +2,8 @@
 
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Coverage](https://img.shields.io/badge/coverage-79%25-yellowgreen)
-![Status](https://img.shields.io/badge/status-v0.3.0-blue)
+![Coverage](https://img.shields.io/badge/coverage-75%25-yellowgreen)
+![Status](https://img.shields.io/badge/status-v0.4.0-blue)
 
 > Triage a folder of academic PDFs into a structured literature review using Claude.
 
@@ -49,7 +49,10 @@ setting:
      │    papers.json      clusters.json       │
      │    report.md        critique.md         │
      │    critique.json    cost.json           │
-     │    run.log                              │
+     │    meta.json        run.log             │
+     │    review.json      (written by viewer) │
+     │    embeddings.npy   (embedding runs)    │
+     │    knowledge_graph.html  (if enabled)   │
      └────────────────────────────────────────┘
 ```
 
@@ -75,6 +78,12 @@ papertriage run --arxiv 2401.15884 --arxiv 2406.13249 --question "What are the k
 
 # Option C: use embedding clusterer and single-pass critic for cost comparison
 papertriage run --arxiv 2401.15884 --question "..." --clusterer embedding --critic single
+
+# Option D: build knowledge graph (requires [embeddings] extra)
+papertriage run --papers ./papers --question "..." --clusterer embedding --enable-graph
+
+# Regenerate synthesis after editing review.json or using the viewer's review UI
+papertriage regenerate <run_id>
 
 make run-viewer
 ```
@@ -166,6 +175,15 @@ See `evals/datasets/*/README.md` for methodology notes and honest disclaimers ab
 - **Multi-agent critique** — three specialized critics (factuality, coverage, novelty) run in
   sequence; near-duplicate findings (Jaccard > 0.8 on claim text) are deduplicated keeping highest
   severity; each finding is tagged with its source critic in the viewer.
+- **Interactive review** — toggle papers in/out and rename cluster labels directly in the viewer;
+  changes are persisted to `outputs/<run_id>/review.json`.
+- **Regenerate** — rerun only synthesize + critique with your review applied via the viewer button
+  or `papertriage regenerate <run_id>`. Output lands in `outputs/<run_id>/regenerated_<timestamp>/`;
+  the original is never touched. Significantly cheaper than a full pipeline rerun (no ingest,
+  extraction, or clustering cost).
+- **Knowledge graph** — paper–paper cosine-similarity graph coloured by cluster, rendered as a
+  self-contained HTML file and embedded in the viewer's Graph tab. Built automatically on embedding
+  runs; also available via `--enable-graph --graph-threshold <0–1>`. Requires `[embeddings]` extra.
 
 ## Roadmap
 
@@ -175,10 +193,10 @@ See `evals/datasets/*/README.md` for methodology notes and honest disclaimers ab
 - Embedding-based clustering with comparative evals against TF-IDF baseline
 - Multi-agent critique with factuality / coverage / novelty critics and aggregation
 
-**V3 — Interactive**
-- Interactive review UI: approve/reject papers, annotate clusters inline
-- Knowledge graph view: paper–paper citation and similarity edges
-- FAISS index persistence for incremental updates across runs
+**V3 — Interactive** ✓ done
+- Interactive review UI: include/exclude papers, annotate clusters, regenerate synthesis
+- Knowledge graph view: paper–paper similarity edges coloured by cluster (embedding runs)
+- `papertriage regenerate <run_id>` CLI command for headless regeneration
 
 ## Design decisions
 

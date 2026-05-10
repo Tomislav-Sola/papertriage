@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "papertriage"
-version = "0.3.0"
+version = "0.4.0"
 license = { text = "MIT" }
 authors = [
     { name = "Tomislav Sola" }
@@ -33,6 +33,8 @@ dev = [
 embeddings = [
     "sentence-transformers>=2.7",
     "faiss-cpu>=1.7",
+    "networkx>=3.2",
+    "pyvis>=0.3",
 ]
 
 [project.scripts]
