@@ -104,7 +104,9 @@ def extract(
                 _log.info("title_fallback", paper_id=raw.id, source=key)
                 break
 
-    if cache is not None:
+    # Only cache complete extractions — an empty title means the LLM skipped it
+    # and the arXiv sidecar may not have existed yet; retry next run.
+    if cache is not None and paper.title and paper.title != "<extraction failed>":
         cache.set(raw.id, paper)
 
     return paper
