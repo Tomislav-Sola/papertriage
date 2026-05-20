@@ -7,6 +7,8 @@
 
 > Triage a folder of academic PDFs into a structured literature review using Claude.
 
+![PaperTriage pipeline overview](docs/images/papertriage_visual.png)
+
 ## What this is
 
 papertriage is a command-line tool that reads a directory of academic PDFs and produces a
